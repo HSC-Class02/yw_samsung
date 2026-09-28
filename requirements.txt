@@ -1,0 +1,2 @@
+# No third-party Python packages are required for the data agent.
+# This keeps GitHub Actions dependency failures to a minimum.

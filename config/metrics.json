@@ -1,0 +1,13 @@
+{
+  "company": "삼성전자",
+  "corp_code": "00126380",
+  "stock_code": "005930",
+  "financial_basis": "연결재무제표(CFS)",
+  "major_metrics": [
+    "revenue", "operating_income", "net_income", "total_assets", "total_liabilities",
+    "total_equity", "cash_and_equivalents", "operating_cash_flow", "investing_cash_flow",
+    "financing_cash_flow", "eps", "operating_margin", "net_margin", "roe", "roa",
+    "debt_ratio", "equity_ratio", "asset_turnover"
+  ],
+  "note": "첨부 재무항목 파일이 현재 대화에 실제 첨부되지 않아 표준 DART 주요 재무수치를 기본값으로 구성했습니다. 파일 첨부 후 metrics.json만 확장하면 됩니다."
+}
