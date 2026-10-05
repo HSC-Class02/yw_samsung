@@ -1,6 +1,13 @@
 name: DART Update and GitHub Pages
 
 on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'src/**'
+      - 'config/**'
+      - 'dashboard/index.html'
+      - 'requirements.txt'
   schedule:
     - cron: '0 3 1 * *'
   workflow_dispatch:
