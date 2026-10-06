@@ -12,6 +12,9 @@ on:
     - cron: '0 3 1 * *'
   workflow_dispatch:
 
+# Least-privilege permissions required by this workflow:
+# - contents: write -> commit refreshed data
+# - pages: write + id-token: write -> GitHub Pages deployment
 permissions:
   contents: write
   pages: write
@@ -29,28 +32,82 @@ env:
 
 jobs:
   update-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Validate DART API secret
+        env:
+          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENDART_API_KEY:-}" ]]; then
+            echo "::error title=Missing OpenDART secret::OPENDART_API_KEY is not available to this workflow."
+            echo "Add it under Settings > Secrets and variables > Actions > Repository secrets."
+            echo "Do not place the API key in source code, workflow YAML, README, or dashboard files."
+            exit 1
+          fi
+          if [[ "${#OPENDART_API_KEY}" -lt 20 ]]; then
+            echo "::error title=Invalid OpenDART secret::OPENDART_API_KEY is present but unexpectedly short."
+            exit 1
+          fi
+          echo "OpenDART API secret is available (value is not printed)."
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [[ -s requirements.txt ]]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Collect DART data
         env:
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
         run: python src/update_data.py
 
-      - name: Prepare Pages data
+      - name: Validate collected data
+        shell: bash
         run: |
+          set -euo pipefail
+          test -s data/financials.json
+          test -s data/financials.csv
+          test -s data/filings.json
+          test -s data/last_update.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          financials = json.loads(Path("data/financials.json").read_text(encoding="utf-8"))
+          filings = json.loads(Path("data/filings.json").read_text(encoding="utf-8"))
+
+          if not financials:
+              raise SystemExit("ERROR: financials.json contains zero records.")
+          if not filings:
+              raise SystemExit("ERROR: filings.json contains zero records.")
+
+          print(f"Validated {len(financials)} financial records and {len(filings)} filings.")
+          PY
+
+      - name: Prepare Pages data
+        shell: bash
+        run: |
+          set -euo pipefail
           rm -rf dashboard/data
           mkdir -p dashboard/data
           cp data/financials.json dashboard/data/financials.json
@@ -71,7 +128,9 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Commit updated data
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data dashboard/data reports 2>/dev/null || git add data dashboard/data
@@ -79,5 +138,5 @@ jobs:
             echo 'No data changes to commit.'
           else
             git commit -m "chore: update Samsung Electronics DART data"
-            git push
+            git push origin HEAD:main
           fi
