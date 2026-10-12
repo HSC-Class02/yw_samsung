@@ -154,14 +154,20 @@ def normalize_account(name):
     }
     return aliases.get(n)
 
-def extract_major(rows):
+def extract_major(rows, prefer_cumulative=False):
     result={}
     for r in rows:
         key=normalize_account(r.get('account_nm',''))
         if not key: continue
-        # DART API has thstrm_amount / thstrm_add_amount etc.
-        val=parse_num(r.get('thstrm_amount'))
-        if val is None: val=parse_num(r.get('thstrm_add_amount'))
+        # Half-year tables should show six-month cumulative income/CF, while Q1/Q3
+        # tables should show the standalone period amount. Balance-sheet amounts
+        # naturally fall back to thstrm_amount when no cumulative value exists.
+        if prefer_cumulative:
+            val=parse_num(r.get('thstrm_add_amount'))
+            if val is None: val=parse_num(r.get('thstrm_amount'))
+        else:
+            val=parse_num(r.get('thstrm_amount'))
+            if val is None: val=parse_num(r.get('thstrm_add_amount'))
         if val is None: continue
         result[key]=val
     return result
@@ -173,7 +179,7 @@ def build_record(year, typ, filing, raw_rows=None):
          'source':'OpenDART'}
     # A legacy record passes a dict (empty until its account mapping is reviewed);
     # normal OpenDART responses pass a list of account rows and must be normalized.
-    rec['major'] = raw_rows if isinstance(raw_rows, dict) else extract_major(raw_rows or [])
+    rec['major'] = raw_rows if isinstance(raw_rows, dict) else extract_major(raw_rows or [], prefer_cumulative=(typ == 'half-year'))
     m=rec['major']
     a=m.get('total_assets'); l=m.get('total_liabilities'); e=m.get('total_equity'); rev=m.get('revenue'); op=m.get('operating_income'); ni=m.get('net_income')
     def div(x,y): return None if x is None or y in (None,0) else x/y
