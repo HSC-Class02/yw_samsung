@@ -62,6 +62,23 @@ jobs:
       - name: Run regression tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate dashboard JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          html = Path("dashboard/index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", html, flags=re.IGNORECASE | re.DOTALL)
+          inline_scripts = [script for script in scripts if script.strip()]
+          if not inline_scripts:
+              raise SystemExit("ERROR: no inline dashboard JavaScript was found.")
+          Path("/tmp/dashboard-inline.js").write_text("\\n".join(inline_scripts), encoding="utf-8")
+          PY
+          node --check /tmp/dashboard-inline.js
+
       - name: Validate DART API secret
         env:
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
@@ -117,6 +134,8 @@ jobs:
                   bad.append(f"record {i}: major metrics are not a dictionary")
               if not isinstance(record.get("ratios"), dict):
                   bad.append(f"record {i}: ratios are not a dictionary")
+              if int(record.get("year") or 0) >= 2015 and not record.get("major"):
+                  bad.append(f"record {i}: no normalized financial metrics for year {record.get('year')}")
               if not record.get("rcept_no") or not record.get("year"):
                   bad.append(f"record {i}: missing filing/year identifier")
           if bad:
