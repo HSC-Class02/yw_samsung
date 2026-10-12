@@ -23,6 +23,15 @@ class FinancialExtractionTests(unittest.TestCase):
         self.assertEqual(major["operating_income"], 100000.0)
         self.assertEqual(major["total_assets"], 2000000.0)
 
+    def test_half_year_prefers_cumulative_amount(self):
+        rows = [
+            {"account_nm": "매출액", "thstrm_amount": "400", "thstrm_add_amount": "900"},
+            {"account_nm": "자산총계", "thstrm_amount": "2000", "thstrm_add_amount": ""},
+        ]
+        values = extract_major(rows, prefer_cumulative=True)
+        self.assertEqual(values["revenue"], 900.0)
+        self.assertEqual(values["total_assets"], 2000.0)
+
     def test_build_record_returns_metric_dictionary_and_ratios(self):
         filing = {
             "reprt_code": "11011",
