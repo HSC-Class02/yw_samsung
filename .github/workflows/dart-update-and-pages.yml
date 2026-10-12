@@ -142,7 +142,7 @@ jobs:
               if not record.get("rcept_no") or not record.get("year"):
                   bad.append(f"record {i}: missing filing/year identifier")
           if bad:
-              raise SystemExit("ERROR: invalid financial data schema:\\n" + "\n".join(bad[:20]))
+              raise SystemExit("ERROR: invalid financial data schema:\n" + "\n".join(bad[:20]))
 
           periods = {record.get("period") for record in financials if isinstance(record, dict)}
           missing = allowed_periods - periods
@@ -177,6 +177,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Commit updated data
+        if: steps.dart-secret.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -185,7 +186,36 @@ jobs:
           git add data dashboard/data reports 2>/dev/null || git add data dashboard/data
           if git diff --cached --quiet; then
             echo 'No data changes to commit.'
-          else
-            git commit -m "chore: update Samsung Electronics DART data"
-            git push origin HEAD:main
+            exit 0
           fi
+
+          git commit -m "chore: update Samsung Electronics DART data"
+
+          # Another run or a human edit may advance main while Pages is deploying.
+          # Rebase the generated-data commit on the newest main and retry the push.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              conflicts="$(git diff --name-only --diff-filter=U)"
+              if [[ -n "$conflicts" ]] && ! grep -Ev '^(data/|dashboard/data/|reports/)' <<< "$conflicts" | grep -q .; then
+                echo "Resolving generated-data conflicts in favor of the fresh collection."
+                while IFS= read -r path; do
+                  [[ -z "$path" ]] && continue
+                  git checkout --theirs -- "$path"
+                  git add -- "$path"
+                done <<< "$conflicts"
+                GIT_EDITOR=true git rebase --continue
+              else
+                echo "::error title=Rebase conflict::Could not safely rebase the data update."
+                git rebase --abort
+                exit 1
+              fi
+            fi
+            if git push origin HEAD:main; then
+              echo "Updated data committed to main."
+              exit 0
+            fi
+            echo "Push attempt $attempt failed because main moved; retrying."
+          done
+          echo "::error title=Push retries exhausted::Could not push the updated data after three attempts."
+          exit 1
