@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/**'
       - 'src/**'
+      - 'tests/**'
       - 'config/**'
       - 'dashboard/index.html'
       - 'requirements.txt'
@@ -51,6 +52,16 @@ jobs:
           cache: 'pip'
           cache-dependency-path: 'requirements.txt'
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [[ -s requirements.txt ]]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run regression tests
+        run: python -m unittest discover -s tests -v
+
       - name: Validate DART API secret
         env:
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
@@ -63,18 +74,11 @@ jobs:
             echo "Do not place the API key in source code, workflow YAML, README, or dashboard files."
             exit 1
           fi
-          if [[ "${#OPENDART_API_KEY}" -lt 20 ]]; then
-            echo "::error title=Invalid OpenDART secret::OPENDART_API_KEY is present but unexpectedly short."
+          if [[ "${#OPENDART_API_KEY}" -ne 40 ]]; then
+            echo "::error title=Invalid OpenDART secret::OpenDART API keys should contain 40 characters."
             exit 1
           fi
           echo "OpenDART API secret is available (value is not printed)."
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [[ -s requirements.txt ]]; then
-            pip install -r requirements.txt
-          fi
 
       - name: Collect DART data
         env:
@@ -96,12 +100,35 @@ jobs:
           financials = json.loads(Path("data/financials.json").read_text(encoding="utf-8"))
           filings = json.loads(Path("data/filings.json").read_text(encoding="utf-8"))
 
-          if not financials:
-              raise SystemExit("ERROR: financials.json contains zero records.")
-          if not filings:
-              raise SystemExit("ERROR: filings.json contains zero records.")
+          if not isinstance(financials, list) or not financials:
+              raise SystemExit("ERROR: financials.json contains zero records or has an invalid format.")
+          if not isinstance(filings, list) or not filings:
+              raise SystemExit("ERROR: filings.json contains zero records or has an invalid format.")
+
+          allowed_periods = {"annual", "half-year", "quarterly-q1", "quarterly-q3"}
+          bad = []
+          for i, record in enumerate(financials):
+              if not isinstance(record, dict):
+                  bad.append(f"record {i}: not an object")
+                  continue
+              if record.get("period") not in allowed_periods:
+                  bad.append(f"record {i}: unknown period {record.get('period')!r}")
+              if not isinstance(record.get("major"), dict):
+                  bad.append(f"record {i}: major metrics are not a dictionary")
+              if not isinstance(record.get("ratios"), dict):
+                  bad.append(f"record {i}: ratios are not a dictionary")
+              if not record.get("rcept_no") or not record.get("year"):
+                  bad.append(f"record {i}: missing filing/year identifier")
+          if bad:
+              raise SystemExit("ERROR: invalid financial data schema:\\n" + "\\n".join(bad[:20]))
+
+          periods = {record.get("period") for record in financials if isinstance(record, dict)}
+          missing = allowed_periods - periods
+          if missing:
+              raise SystemExit("ERROR: missing report categories: " + ", ".join(sorted(missing)))
 
           print(f"Validated {len(financials)} financial records and {len(filings)} filings.")
+          print("Report categories: " + ", ".join(sorted(periods)))
           PY
 
       - name: Prepare Pages data
