@@ -1,6 +1,6 @@
-# Samsung Electronics DART Financial Analysis Agent
-
 [![🔗 대시보드 바로가기](docs/dashboard-badge.svg)](https://hsc-class02.github.io/yw_samsung/)
+
+# Samsung Electronics DART Financial Analysis Agent
 
 삼성전자(005930, OpenDART Corp. Code `00126380`)의 DART 정기보고서를 자동 수집하고 연결재무제표 주요 수치와 재무비율을 계산하여 GitHub Pages Dashboard로 제공하는 프로젝트입니다.
 
@@ -10,19 +10,18 @@
 
 GitHub 저장소: https://github.com/HSC-Class02/yw_samsung
 
-> 현재 저장소가 비어 있는 상태를 기준으로 프로젝트를 생성했습니다. GitHub 계정 연결이 완료되면 아래 파일을 저장소에 업로드하면 됩니다.
-
 ## 제공 기능
 
 - 2010년부터 사업보고서 / 반기보고서 / 1분기보고서 / 3분기보고서 수집
 - 2015년 이후: OpenDART `fnlttSinglAcntAll.json` 기반 연결재무제표(CFS) 추출
 - 2010~2014년: OpenDART 공시검색 + 원문 `document.xml` 다운로드 및 legacy table 후보 추출
-- 주요 수치: 매출액, 영업이익, 당기순이익, 자산, 부채, 자본, 현금성자산, 현금흐름, EPS
+- 주요 수치: 매출액, 영업이익, 당기순이익, 자산, 부채, 자본, 현금성자산, 영업·투자·재무 현금흐름, EPS
 - 주요 비율: 영업이익률, 순이익률, ROE, ROA, 부채비율, 자기자본비율, 총자산회전율
+- 반기보고서는 누적 금액, 1·3분기 보고서는 해당 분기 금액을 우선 표시
 - Annual / Half-year / Quarterly 3개 표 제공
 - 매출/영업이익, 수익성, 재무상태, 현금흐름 차트 제공
-- DART 원문 접수번호 및 링크 저장
-- DART 원문 접수번호/원문 URL 저장
+- DART 원문 접수번호 및 원문 URL 저장
+- 데이터 스키마 검증 및 주요 계정 추출 회귀 테스트
 - 원문 보고서 ZIP 저장 옵션(기본값 false; 대용량 repo 방지를 위해 필요 시 true)
 - GitHub Actions: 매월 1일 자동 수집 + Dashboard 배포
 - 국내 비교 참고 기업(Peer Firms) 표 제공
@@ -62,9 +61,10 @@ Workflow는 다음과 같이 구성되어 있습니다.
 
 - `schedule`: 매월 1일 03:00 UTC (한국시간 12:00)
 - `workflow_dispatch`: 수동 실행 가능
-- DART 데이터 수집 → JSON/CSV/원문 저장 → Dashboard artifact 생성 → GitHub Pages 배포 → 변경 파일 commit/push
+- 회귀 테스트 → Secret 검증 → DART 데이터 수집 → 데이터 스키마 검증 → GitHub Pages 배포 → 변경 데이터 commit/push
+- 데이터 수집은 저장소 Actions Secret `OPENDART_API_KEY`가 등록되어 있어야 작동합니다. 키가 없으면 워크플로는 의도적으로 중단되며, 키 값을 코드·README·로그에 출력하지 않습니다.
 
-OpenDART 공시검색 API는 `list.json`, 원문 보고서는 `document.xml`, 2015년 이후 정기보고서 전체 재무제표는 `fnlttSinglAcntAll.json`을 사용합니다. 공식 문서상 재무제표 API의 사업연도는 2015년 이후부터 제공되며, 보고서 코드는 사업보고서 `11011`, 반기 `11012`, 1분기 `11013`, 3분기 `11014`입니다.
+OpenDART 공시검색 API는 정기공시 전체를 검색하는 `list.json`, 원문 보고서는 `document.xml`, 2015년 이후 정기보고서 전체 재무제표는 `fnlttSinglAcntAll.json`을 사용합니다. 연도별 공시 검색은 사업·반기·분기보고서를 모두 포함하고, 페이지가 나뉘는 경우 후속 페이지도 읽습니다. 공식 문서상 재무제표 API의 사업연도는 2015년 이후부터 제공되며, 보고서 코드는 사업보고서 `11011`, 반기 `11012`, 1분기 `11013`, 3분기 `11014`입니다.
 
 ## 2010~2014 데이터에 대한 주의
 
@@ -100,7 +100,8 @@ OpenDART의 정기보고서 재무 API가 2015년 이후 제공되므로 2010~20
 |---|---:|---|
 | SK하이닉스 | 000660 | 메모리 반도체·HBM |
 | DB하이텍 | 000990 | 파운드리·아날로그/전력 반도체 |
-| LX세미콘 | 108320 | 팹리스·디스플레이/반도체 설계 |
+| LX세미콘 | 108320 | 팹리스·디스플레이 구동칩 |
+| LG디스플레이 | 034220 | 디스플레이 패널·OLED/LCD |
 | 삼성전기 | 009150 | 전자부품·MLCC·패키지 기판 |
 | LG전자 | 066570 | 가전·전장·전자제품 |
 
