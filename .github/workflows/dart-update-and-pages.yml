@@ -139,7 +139,7 @@ jobs:
               if not record.get("rcept_no") or not record.get("year"):
                   bad.append(f"record {i}: missing filing/year identifier")
           if bad:
-              raise SystemExit("ERROR: invalid financial data schema:\\n" + "\\n".join(bad[:20]))
+              raise SystemExit("ERROR: invalid financial data schema:\\n" + "\n".join(bad[:20]))
 
           periods = {record.get("period") for record in financials if isinstance(record, dict)}
           missing = allowed_periods - periods
