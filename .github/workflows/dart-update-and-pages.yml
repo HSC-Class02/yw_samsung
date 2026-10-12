@@ -79,30 +79,33 @@ jobs:
           PY
           node --check /tmp/dashboard-inline.js
 
-      - name: Validate DART API secret
+      - name: Check OpenDART API secret
+        id: dart-secret
         env:
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ -z "${OPENDART_API_KEY:-}" ]]; then
-            echo "::error title=Missing OpenDART secret::OPENDART_API_KEY is not available to this workflow."
-            echo "Add it under Settings > Secrets and variables > Actions > Repository secrets."
-            echo "Do not place the API key in source code, workflow YAML, README, or dashboard files."
-            exit 1
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=OpenDART API key missing::Data refresh was skipped; Pages will still deploy the available dashboard/data snapshot."
+            echo "Register OPENDART_API_KEY under Settings > Secrets and variables > Actions to enable monthly data collection."
+          elif [[ "${#OPENDART_API_KEY}" -ne 40 ]]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=OpenDART API key format invalid::Data refresh was skipped because the key length is not 40 characters."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "OpenDART API secret is available (value is not printed)."
           fi
-          if [[ "${#OPENDART_API_KEY}" -ne 40 ]]; then
-            echo "::error title=Invalid OpenDART secret::OpenDART API keys should contain 40 characters."
-            exit 1
-          fi
-          echo "OpenDART API secret is available (value is not printed)."
 
       - name: Collect DART data
+        if: steps.dart-secret.outputs.available == 'true'
         env:
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
         run: python src/update_data.py
 
       - name: Validate collected data
+        if: steps.dart-secret.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
