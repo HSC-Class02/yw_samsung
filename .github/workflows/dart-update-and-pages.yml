@@ -75,7 +75,7 @@ jobs:
           inline_scripts = [script for script in scripts if script.strip()]
           if not inline_scripts:
               raise SystemExit("ERROR: no inline dashboard JavaScript was found.")
-          Path("/tmp/dashboard-inline.js").write_text("\\n".join(inline_scripts), encoding="utf-8")
+          Path("/tmp/dashboard-inline.js").write_text("\n".join(inline_scripts), encoding="utf-8")
           PY
           node --check /tmp/dashboard-inline.js
 
