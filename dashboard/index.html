@@ -6,11 +6,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 :root{--navy:#0f2a43;--blue:#2f6fed;--bg:#f4f8fc;--card:#fff;--text:#16263a;--muted:#6b7b8e;--line:#e5ebf2;--green:#14966b;--orange:#e58a34;--purple:#7664d8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}.wrap{max-width:1280px;margin:auto;padding:28px 22px 60px}.hero{background:linear-gradient(135deg,var(--navy),#204c76);color:#fff;border-radius:22px;padding:28px 32px;box-shadow:0 14px 35px #0f2a4320}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}.hero h1{margin:8px 0;font-size:34px}.hero p{margin:5px 0;opacity:.85}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.pill{background:#ffffff18;border:1px solid #ffffff25;border-radius:999px;padding:8px 12px;font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 7px 24px #0f2a4308}.kpi .label{font-size:12px;color:var(--muted)}.kpi .value{font-size:25px;font-weight:750;margin-top:8px}.kpi .sub{font-size:12px;color:var(--muted);margin-top:5px}.charts{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}.chart-card{min-height:350px}.chart-card h2,.section h2{font-size:18px;margin:0 0 16px}.chart-box{height:285px}.section{margin-top:24px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.data-table{width:100%;border-collapse:collapse;min-width:980px}.data-table th{background:#f8fafc;color:#536579;font-size:12px;position:sticky;top:0}.data-table th,.data-table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.data-table th:first-child,.data-table td:first-child{text-align:left}.data-table tr:hover td{background:#fbfdff}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;background:#edf4ff;color:#275db6}.peer-note{color:var(--muted);font-size:13px;line-height:1.6}.footer{margin-top:28px;color:var(--muted);font-size:12px;text-align:center}.links a{color:#fff;text-decoration:none;margin-right:14px}.status{margin-left:auto;font-size:12px;opacity:.8}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}@media(max-width:560px){.grid{grid-template-columns:1fr}.hero{padding:22px}.hero h1{font-size:27px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}.wrap{max-width:1280px;margin:auto;padding:28px 22px 60px}.hero{background:linear-gradient(135deg,var(--navy),#204c76);color:#fff;border-radius:22px;padding:28px 32px;box-shadow:0 14px 35px #0f2a4320}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}.hero h1{margin:8px 0;font-size:34px}.hero p{margin:5px 0;opacity:.85}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.pill{background:#ffffff18;border:1px solid #ffffff25;border-radius:999px;padding:8px 12px;font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 7px 24px #0f2a4308}.kpi .label{font-size:12px;color:var(--muted)}.kpi .value{font-size:25px;font-weight:750;margin-top:8px}.kpi .sub{font-size:12px;color:var(--muted);margin-top:5px}.charts{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}.chart-card{min-height:350px}.chart-card h2,.section h2{font-size:18px;margin:0 0 16px}.chart-box{height:285px}.section{margin-top:24px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.data-table{width:100%;border-collapse:collapse;min-width:980px}.data-table th{background:#f8fafc;color:#536579;font-size:12px;position:sticky;top:0}.data-table th,.data-table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.data-table th:first-child,.data-table td:first-child{text-align:left}.data-table tr:hover td{background:#fbfdff}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;background:#edf4ff;color:#275db6}.notice{border:1px solid #f1d4a8;background:#fffaf1;color:#674b21;border-radius:14px;padding:16px 18px;line-height:1.65}.notice a{color:#245fc4;font-weight:650}.empty-row{padding:24px!important;text-align:center!important;color:var(--muted)!important}.peer-note{color:var(--muted);font-size:13px;line-height:1.6}.footer{margin-top:28px;color:var(--muted);font-size:12px;text-align:center}.links a{color:#fff;text-decoration:none;margin-right:14px}.status{margin-left:auto;font-size:12px;opacity:.8}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}@media(max-width:560px){.grid{grid-template-columns:1fr}.hero{padding:22px}.hero h1{font-size:27px}}
 </style></head>
 <body><main class="wrap">
 <section class="hero"><div class="eyebrow">DART · OPEN DATA · AUTOMATED FINANCIAL ANALYSIS</div><h1>삼성전자 재무분석 Dashboard</h1><p>2010년 이후 사업·반기·분기보고서를 기반으로 한 연결재무제표 및 재무비율 추적</p><div class="meta"><span class="pill">DART Corp. 00126380</span><span class="pill">Stock 005930</span><span class="pill">연결(CFS)</span><span class="pill" id="updated">업데이트 확인 중…</span><span class="status"><span class="links"><a href="https://dart.fss.or.kr" target="_blank">DART</a><a href="https://github.com/HSC-Class02/yw_samsung" target="_blank">GitHub</a></span></span></div></section>
 <section class="grid" id="kpis"></section>
+<div class="section" id="dataNotice" style="display:none"></div>
 <section class="charts"><div class="card chart-card"><h2>매출 · 영업이익 추이</h2><div class="chart-box"><canvas id="profitChart"></canvas></div></div><div class="card chart-card"><h2>수익성 지표</h2><div class="chart-box"><canvas id="marginChart"></canvas></div></div><div class="card chart-card"><h2>자산 · 부채 · 자본</h2><div class="chart-box"><canvas id="balanceChart"></canvas></div></div><div class="card chart-card"><h2>현금흐름</h2><div class="chart-box"><canvas id="cashChart"></canvas></div></div></section>
 <div class="section"><h2>Annual · 사업보고서</h2><div class="table-wrap"><table class="data-table" id="annual"></table></div></div>
 <div class="section"><h2>Half-year · 반기보고서</h2><div class="table-wrap"><table class="data-table" id="half"></table></div></div>
@@ -25,13 +26,161 @@
 <div class="footer">Source: Financial Supervisory Service OpenDART. 공시 원문과 비교하여 확인하세요. 자동 수집: 매월 1일.</div>
 </main>
 <script>
-const M={revenue:'매출액',operating_income:'영업이익',net_income:'당기순이익',total_assets:'자산총계',total_liabilities:'부채총계',total_equity:'자본총계',cash_and_equivalents:'현금및현금성자산',operating_cash_flow:'영업활동CF',investing_cash_flow:'투자활동CF',financing_cash_flow:'재무활동CF',eps:'EPS',operating_margin:'영업이익률',net_margin:'순이익률',roe:'ROE',roa:'ROA',debt_ratio:'부채비율',equity_ratio:'자기자본비율',asset_turnover:'총자산회전율'};
-const fmt=(v,pct=false)=>v==null||Number.isNaN(Number(v))?'—':pct?(Number(v)*100).toFixed(1)+'%':new Intl.NumberFormat('ko-KR',{maximumFractionDigits:0}).format(Number(v)/1e8)+'억';
-function major(r,k){return r.major?.[k]??null} function ratio(r,k){return r.ratios?.[k]??null}
-function sortRows(rows){return [...rows].sort((a,b)=>String(a.year).localeCompare(String(b.year))||String(a.period).localeCompare(String(b.period)))}
-function table(id,rows){const cols=['year','period','revenue','operating_income','net_income','total_assets','total_liabilities','total_equity','cash_and_equivalents','operating_cash_flow','operating_margin','net_margin','roe','debt_ratio'];const h=['연도','구분',...cols.slice(2).map(x=>M[x])];let html='<thead><tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';for(const r of sortRows(rows)){html+='<tr>'+[r.year,r.period,...cols.slice(2).map(k=>k.includes('margin')||['roe','debt_ratio'].includes(k)?fmt(ratios(r,k),true):fmt(major(r,k)) )].map((x,i)=>`<td>${i<2?x:x}</td>`).join('')+'</tr>'}html+='</tbody>';document.getElementById(id).innerHTML=html}
-function ratios(r,k){return ratio(r,k)}
-function latestAnnual(rows){return sortRows(rows.filter(r=>r.period==='annual')).at(-1)}
-function makeChart(id,type,labels,datasets){return new Chart(document.getElementById(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>new Intl.NumberFormat('ko-KR',{notation:'compact'}).format(v)}},x:{grid:{display:false}}}}})}
-async function init(){const data=await fetch('data/financials.json?ts='+Date.now()).then(r=>r.json());const annual=sortRows(data.filter(r=>r.period==='annual'));const latest=latestAnnual(data);document.getElementById('updated').textContent='최근 수집 '+(latest?.rcept_dt||'—');const kpis=[['매출액',major(latest,'revenue'),false],['영업이익',major(latest,'operating_income'),false],['당기순이익',major(latest,'net_income'),false],['ROE',ratio(latest,'roe'),true]];document.getElementById('kpis').innerHTML=kpis.map(x=>`<div class="card kpi"><div class="label">${x[0]}</div><div class="value">${fmt(x[1],x[2])}</div><div class="sub">최근 사업보고서 · 연결 기준</div></div>`).join('');const labels=annual.map(r=>r.year);makeChart('profitChart','line',labels,[{label:'매출액(억원)',data:annual.map(r=>(major(r,'revenue')||0)/1e8),borderWidth:2,tension:.25},{label:'영업이익(억원)',data:annual.map(r=>(major(r,'operating_income')||0)/1e8),borderWidth:2,tension:.25}]);makeChart('marginChart','line',labels,[{label:'영업이익률',data:annual.map(r=>(ratio(r,'operating_margin')||0)*100),borderWidth:2,tension:.25},{label:'ROE',data:annual.map(r=>(ratio(r,'roe')||0)*100),borderWidth:2,tension:.25}]);makeChart('balanceChart','bar',labels,[{label:'자산',data:annual.map(r=>(major(r,'total_assets')||0)/1e12),borderWidth:1},{label:'부채',data:annual.map(r=>(major(r,'total_liabilities')||0)/1e12),borderWidth:1},{label:'자본',data:annual.map(r=>(major(r,'total_equity')||0)/1e12),borderWidth:1}]);makeChart('cashChart','bar',labels,[{label:'영업CF',data:annual.map(r=>(major(r,'operating_cash_flow')||0)/1e12),borderWidth:1},{label:'투자CF',data:annual.map(r=>(major(r,'investing_cash_flow')||0)/1e12),borderWidth:1},{label:'재무CF',data:annual.map(r=>(major(r,'financing_cash_flow')||0)/1e12),borderWidth:1}]);table('annual',data.filter(r=>r.period==='annual'));table('half',data.filter(r=>r.period==='half-year'));table('quarter',data.filter(r=>r.period.startsWith('quarterly')))}init().catch(e=>{document.getElementById('updated').textContent='데이터 로드 오류: '+e.message});
+const METRICS = {
+  revenue:"매출액", operating_income:"영업이익", net_income:"당기순이익",
+  total_assets:"자산총계", total_liabilities:"부채총계", total_equity:"자본총계",
+  cash_and_equivalents:"현금및현금성자산", operating_cash_flow:"영업활동 현금흐름",
+  investing_cash_flow:"투자활동 현금흐름", financing_cash_flow:"재무활동 현금흐름",
+  eps:"EPS", operating_margin:"영업이익률", net_margin:"순이익률", roe:"ROE",
+  roa:"ROA", debt_ratio:"부채비율", equity_ratio:"자기자본비율", asset_turnover:"총자산회전율"
+};
+const AMOUNT_KEYS = ["revenue","operating_income","net_income","total_assets","total_liabilities","total_equity","cash_and_equivalents","operating_cash_flow","investing_cash_flow","financing_cash_flow"];
+const PERCENT_KEYS = ["operating_margin","net_margin","roe","roa","debt_ratio","equity_ratio"];
+const TABLE_KEYS = ["revenue","operating_income","net_income","total_assets","total_liabilities","total_equity","cash_and_equivalents","operating_cash_flow","investing_cash_flow","financing_cash_flow","eps","operating_margin","net_margin","roe","roa","debt_ratio","equity_ratio","asset_turnover"];
+const PERIOD_LABELS = {"annual":"사업보고서","half-year":"반기보고서","quarterly-q1":"1분기보고서","quarterly-q3":"3분기보고서"};
+const PERIOD_ORDER = {"annual":0,"quarterly-q3":1,"half-year":2,"quarterly-q1":3};
+
+function major(row, key) {
+  const value = row && row.major ? row.major[key] : null;
+  return value === null || value === undefined || value === "" ? null : Number(value);
+}
+function ratio(row, key) {
+  const value = row && row.ratios ? row.ratios[key] : null;
+  return value === null || value === undefined || value === "" ? null : Number(value);
+}
+function esc(value) {
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+function formatAmount(value) {
+  if (value === null || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat("ko-KR",{maximumFractionDigits:0}).format(value / 1e8) + "억 원";
+}
+function formatValue(key, value) {
+  if (value === null || !Number.isFinite(value)) return "—";
+  if (PERCENT_KEYS.includes(key)) return (value * 100).toFixed(1) + "%";
+  if (key === "asset_turnover") return value.toFixed(2) + "x";
+  if (key === "eps") return new Intl.NumberFormat("ko-KR",{maximumFractionDigits:2}).format(value) + "원";
+  return formatAmount(value);
+}
+function sortByYear(rows, newestFirst) {
+  return rows.slice().sort((a,b) => {
+    const yearDiff = Number(a.year) - Number(b.year);
+    if (yearDiff !== 0) return newestFirst ? -yearDiff : yearDiff;
+    return (PERIOD_ORDER[a.period] ?? 9) - (PERIOD_ORDER[b.period] ?? 9);
+  });
+}
+function renderTable(id, rows) {
+  const table = document.getElementById(id);
+  const headings = ["사업연도","보고서",...TABLE_KEYS.map(key => METRICS[key])];
+  let content = "<thead><tr>" + headings.map(h => "<th>" + esc(h) + "</th>").join("") + "</tr></thead><tbody>";
+  if (!rows.length) {
+    content += '<tr><td class="empty-row" colspan="' + headings.length + '">표시할 데이터가 없습니다.</td></tr>';
+  } else {
+    sortByYear(rows,true).forEach(row => {
+      const period = row.report_name || PERIOD_LABELS[row.period] || row.period || "—";
+      content += "<tr><td>" + esc(row.year ?? "—") + "</td><td>" + esc(period) + "</td>";
+      TABLE_KEYS.forEach(key => {
+        const value = PERCENT_KEYS.includes(key) || key === "asset_turnover" || key === "eps" ? ratioOrMajor(row,key) : major(row,key);
+        content += "<td>" + esc(formatValue(key,value)) + "</td>";
+      });
+      content += "</tr>";
+    });
+  }
+  table.innerHTML = content + "</tbody>";
+}
+function ratioOrMajor(row,key) {
+  return PERCENT_KEYS.includes(key) || key === "asset_turnover" ? ratio(row,key) : major(row,key);
+}
+function chartOptions(unit, percent) {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:"index",intersect:false},
+    plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:function(context) {
+      const n = context.parsed.y;
+      if (n === null || n === undefined) return context.dataset.label + ": —";
+      return context.dataset.label + ": " + new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(n) + (percent ? "%" : " " + unit);
+    }}}},
+    scales:{y:{ticks:{callback:function(v){return new Intl.NumberFormat("ko-KR",{notation:"compact",maximumFractionDigits:1}).format(v) + (percent ? "%" : "");}},grid:{color:"#edf1f6"}},x:{grid:{display:false}}}
+  };
+}
+function makeChart(id,type,labels,datasets,unit,percent) {
+  const element = document.getElementById(id);
+  return new Chart(element,{type:type,data:{labels:labels,datasets:datasets},options:chartOptions(unit,percent)});
+}
+function showNotice(html) {
+  const box = document.getElementById("dataNotice");
+  box.style.display = "block";
+  box.innerHTML = '<div class="notice">' + html + '</div>';
+}
+function latestAnnual(rows) {
+  return sortByYear(rows.filter(row => row.period === "annual"),true)[0] || null;
+}
+async function init() {
+  const status = document.getElementById("updated");
+  let data = [], meta = {};
+  try {
+    const responses = await Promise.all([
+      fetch("data/financials.json?ts=" + Date.now(),{cache:"no-store"}),
+      fetch("data/last_update.json?ts=" + Date.now(),{cache:"no-store"})
+    ]);
+    if (!responses[0].ok) throw new Error("financials.json HTTP " + responses[0].status);
+    if (!responses[1].ok) throw new Error("last_update.json HTTP " + responses[1].status);
+    data = await responses[0].json();
+    meta = await responses[1].json();
+    if (!Array.isArray(data)) throw new Error("financials.json 형식이 배열이 아닙니다.");
+  } catch(error) {
+    status.textContent = "데이터 로드 오류";
+    showNotice("재무 데이터 파일을 불러오지 못했습니다. <a href='https://github.com/HSC-Class02/yw_samsung/actions/workflows/dart-update-and-pages.yml'>GitHub Actions 실행 기록</a>과 Pages 배포 상태를 확인해 주세요. 오류: " + esc(error.message));
+    ["annual","half","quarter"].forEach(id => renderTable(id,[]));
+    return;
+  }
+
+  const updatedAt = meta.updated_at ? String(meta.updated_at).slice(0,16).replace("T"," ") : "수집 이력 없음";
+  status.textContent = "최종 수집 " + updatedAt + " · " + (meta.record_count ?? data.length) + "건";
+  if (!data.length) {
+    showNotice("아직 표시할 재무 데이터가 수집되지 않았습니다. Actions가 <b>OPENDART_API_KEY</b> Secret 누락으로 중단되는 경우, <a href='https://github.com/HSC-Class02/yw_samsung/settings/secrets/actions'>저장소 Actions Secrets 설정</a>에서 인증키를 등록한 후 <a href='https://github.com/HSC-Class02/yw_samsung/actions/workflows/dart-update-and-pages.yml'>워크플로를 수동 실행</a>해 주세요. API 키는 코드나 README에 공개하지 마세요.");
+  }
+  const annual = sortByYear(data.filter(row => row.period === "annual"),false);
+  const latest = latestAnnual(data) || sortByYear(data,true)[0] || null;
+  const kpis = [
+    {label:"매출액",value:major(latest,"revenue"),kind:"amount",sub:"최근 수집 사업연도"},
+    {label:"영업이익",value:major(latest,"operating_income"),kind:"amount",sub:"최근 수집 사업연도"},
+    {label:"당기순이익",value:major(latest,"net_income"),kind:"amount",sub:"최근 수집 사업연도"},
+    {label:"ROE",value:ratio(latest,"roe"),kind:"percent",sub:"최근 수집 사업연도"}
+  ];
+  document.getElementById("kpis").innerHTML = kpis.map(item =>
+    '<div class="card kpi"><div class="label">' + esc(item.label) + '</div><div class="value">' +
+    (item.kind === "percent" ? (item.value === null ? "—" : (item.value*100).toFixed(1)+"%") : formatAmount(item.value)) +
+    '</div><div class="sub">' + esc(item.sub) + '</div></div>'
+  ).join("");
+
+  renderTable("annual",data.filter(row => row.period === "annual"));
+  renderTable("half",data.filter(row => row.period === "half-year"));
+  renderTable("quarter",data.filter(row => row.period === "quarterly-q1" || row.period === "quarterly-q3"));
+
+  if (data.length && window.Chart) {
+    const labels = annual.map(row => String(row.year));
+    makeChart("profitChart","line",labels,[
+      {label:"매출액",data:annual.map(row => {const n=major(row,"revenue");return n===null?null:n/1e8; }),borderColor:"#2f6fed",backgroundColor:"#2f6fed18",fill:false,borderWidth:2,tension:.25,spanGaps:false},
+      {label:"영업이익",data:annual.map(row => {const n=major(row,"operating_income");return n===null?null:n/1e8; }),borderColor:"#14966b",backgroundColor:"#14966b18",fill:false,borderWidth:2,tension:.25,spanGaps:false}
+    ],"억원",false);
+    makeChart("marginChart","line",labels,[
+      {label:"영업이익률",data:annual.map(row => {const n=ratio(row,"operating_margin");return n===null?null:n*100; }),borderColor:"#2f6fed",fill:false,borderWidth:2,tension:.25,spanGaps:false},
+      {label:"ROE",data:annual.map(row => {const n=ratio(row,"roe");return n===null?null:n*100; }),borderColor:"#7664d8",fill:false,borderWidth:2,tension:.25,spanGaps:false}
+    ],"%",true);
+    makeChart("balanceChart","bar",labels,[
+      {label:"자산",data:annual.map(row => {const n=major(row,"total_assets");return n===null?null:n/1e12; }),backgroundColor:"#2f6fed",borderWidth:0},
+      {label:"부채",data:annual.map(row => {const n=major(row,"total_liabilities");return n===null?null:n/1e12; }),backgroundColor:"#e58a34",borderWidth:0},
+      {label:"자본",data:annual.map(row => {const n=major(row,"total_equity");return n===null?null:n/1e12; }),backgroundColor:"#14966b",borderWidth:0}
+    ],"조원",false);
+    makeChart("cashChart","bar",labels,[
+      {label:"영업활동 CF",data:annual.map(row => {const n=major(row,"operating_cash_flow");return n===null?null:n/1e12; }),backgroundColor:"#2f6fed",borderWidth:0},
+      {label:"투자활동 CF",data:annual.map(row => {const n=major(row,"investing_cash_flow");return n===null?null:n/1e12; }),backgroundColor:"#e58a34",borderWidth:0},
+      {label:"재무활동 CF",data:annual.map(row => {const n=major(row,"financing_cash_flow");return n===null?null:n/1e12; }),backgroundColor:"#7664d8",borderWidth:0}
+    ],"조원",false);
+  } else if (data.length && !window.Chart) {
+    showNotice("재무 표는 준비되었지만 차트 라이브러리를 불러오지 못했습니다. 네트워크 또는 CDN 접근을 확인해 주세요.");
+  }
+}
+init();
 </script></body></html>
