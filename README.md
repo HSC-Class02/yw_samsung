@@ -61,8 +61,9 @@ Workflow는 다음과 같이 구성되어 있습니다.
 
 - `schedule`: 매월 1일 03:00 UTC (한국시간 12:00)
 - `workflow_dispatch`: 수동 실행 가능
-- 회귀 테스트 → Secret 검증 → DART 데이터 수집 → 데이터 스키마 검증 → GitHub Pages 배포 → 변경 데이터 commit/push
-- 데이터 수집은 저장소 Actions Secret `OPENDART_API_KEY`가 등록되어 있어야 작동합니다. 키가 없으면 워크플로는 의도적으로 중단되며, 키 값을 코드·README·로그에 출력하지 않습니다.
+- 회귀 테스트 → JavaScript 문법 검사 → Secret 확인 → (키가 있는 경우) DART 데이터 수집·스키마 검증 → GitHub Pages 배포
+- 저장소 Actions Secret `OPENDART_API_KEY`가 없거나 길이가 40자가 아니면 수집 단계만 경고와 함께 건너뛰고 Pages 배포는 계속합니다. 따라서 대시보드는 열리지만, 키 등록 전에는 재무 데이터가 갱신되지 않습니다.
+- 키 값은 코드·README·로그에 출력하지 않습니다.
 
 OpenDART 공시검색 API는 정기공시 전체를 검색하는 `list.json`, 원문 보고서는 `document.xml`, 2015년 이후 정기보고서 전체 재무제표는 `fnlttSinglAcntAll.json`을 사용합니다. 연도별 공시 검색은 사업·반기·분기보고서를 모두 포함하고, 페이지가 나뉘는 경우 후속 페이지도 읽습니다. 공식 문서상 재무제표 API의 사업연도는 2015년 이후부터 제공되며, 보고서 코드는 사업보고서 `11011`, 반기 `11012`, 1분기 `11013`, 3분기 `11014`입니다.
 
