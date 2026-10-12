@@ -53,8 +53,29 @@ def save_json(path, obj):
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding='utf-8')
 
 def get_filings(year):
-    # Query a full year so monthly refresh discovers amended/new filings too.
-    return api('list.json', {'corp_code':CORP_CODE,'bgn_de':f'{year}0101','end_de':f'{year+1}0430','pblntf_detail_ty':'a001','page_no':1,'page_count':100}, False).get('list',[])
+    # Include all regular reports (annual, half-year and quarterly), not annual reports only.
+    # Annual reports for a business year may be filed in the following calendar year.
+    params = {
+        'corp_code': CORP_CODE,
+        'bgn_de': f'{year}0101',
+        'end_de': f'{year+1}0430',
+        'pblntf_ty': 'A',
+        'page_no': 1,
+        'page_count': 100,
+        'sort': 'date',
+        'sort_mth': 'asc',
+    }
+    first = api('list.json', params, False)
+    rows = list(first.get('list', []))
+    total_pages = int(first.get('total_page') or 1)
+    for page_no in range(2, total_pages + 1):
+        next_params = dict(params, page_no=page_no)
+        rows.extend(api('list.json', next_params, False).get('list', []))
+    # Defend against duplicate entries in paginated responses.
+    unique = {}
+    for row in rows:
+        unique[row.get('rcept_no') or repr(row)] = row
+    return list(unique.values())
 
 def relevant_filings(year):
     rows=[]
@@ -150,10 +171,9 @@ def build_record(year, typ, filing, raw_rows=None):
          'rcept_no':filing.get('rcept_no'),'rcept_dt':filing.get('rcept_dt'),
          'dart_url':f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={filing.get('rcept_no')}",
          'source':'OpenDART'}
-    if raw_rows is not None:
-        rec['major']=raw_rows
-    else:
-        rec['major']=extract_major(raw_rows or [])
+    # A legacy record passes a dict (empty until its account mapping is reviewed);
+    # normal OpenDART responses pass a list of account rows and must be normalized.
+    rec['major'] = raw_rows if isinstance(raw_rows, dict) else extract_major(raw_rows or [])
     m=rec['major']
     a=m.get('total_assets'); l=m.get('total_liabilities'); e=m.get('total_equity'); rev=m.get('revenue'); op=m.get('operating_income'); ni=m.get('net_income')
     def div(x,y): return None if x is None or y in (None,0) else x/y
