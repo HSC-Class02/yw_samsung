@@ -71,7 +71,7 @@ jobs:
           from pathlib import Path
 
           html = Path("dashboard/index.html").read_text(encoding="utf-8")
-          scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", html, flags=re.IGNORECASE | re.DOTALL)
+          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, flags=re.IGNORECASE | re.DOTALL)
           inline_scripts = [script for script in scripts if script.strip()]
           if not inline_scripts:
               raise SystemExit("ERROR: no inline dashboard JavaScript was found.")
