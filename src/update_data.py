@@ -53,9 +53,10 @@ def save_json(path, obj):
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding='utf-8')
 
 def get_filings(year):
-    # Include all regular reports (annual, half-year and quarterly), not annual reports only.
-    # Annual reports for a business year may be filed in the following calendar year.
-    params = {
+    # Query only the official regular-report detail categories. Without this filter,
+    # list.json can return hundreds of unrelated periodic disclosures for Samsung.
+    # A business year's annual report may be filed through April of the following year.
+    base_params = {
         'corp_code': CORP_CODE,
         'bgn_de': f'{year}0101',
         'end_de': f'{year+1}0430',
@@ -65,13 +66,17 @@ def get_filings(year):
         'sort': 'date',
         'sort_mth': 'asc',
     }
-    first = api('list.json', params, False)
-    rows = list(first.get('list', []))
-    total_pages = int(first.get('total_page') or 1)
-    for page_no in range(2, total_pages + 1):
-        next_params = dict(params, page_no=page_no)
-        rows.extend(api('list.json', next_params, False).get('list', []))
-    # Defend against duplicate entries in paginated responses.
+    rows = []
+    # OpenDART: A001=annual, A002=half-year, A003=quarterly.
+    for detail_type in ('A001', 'A002', 'A003'):
+        params = dict(base_params, pblntf_detail_ty=detail_type)
+        first = api('list.json', params, False)
+        rows.extend(first.get('list', []))
+        total_pages = int(first.get('total_page') or 1)
+        for page_no in range(2, total_pages + 1):
+            next_params = dict(params, page_no=page_no)
+            rows.extend(api('list.json', next_params, False).get('list', []))
+    # Deduplicate across disclosure categories and pages.
     unique = {}
     for row in rows:
         unique[row.get('rcept_no') or repr(row)] = row
