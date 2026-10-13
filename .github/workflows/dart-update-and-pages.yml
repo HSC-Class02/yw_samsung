@@ -82,7 +82,7 @@ jobs:
       - name: Check OpenDART API secret
         id: dart-secret
         env:
-          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
+          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY || secrets.DART_API_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -101,7 +101,7 @@ jobs:
       - name: Collect DART data
         if: steps.dart-secret.outputs.available == 'true'
         env:
-          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
+          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY || secrets.DART_API_KEY }}
         run: python src/update_data.py
 
       - name: Validate collected data
