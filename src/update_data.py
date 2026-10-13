@@ -1,5 +1,6 @@
 from __future__ import annotations
 import csv, io, json, os, re, sys, time, zipfile
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, date
 from html.parser import HTMLParser
 from pathlib import Path
@@ -69,8 +70,8 @@ def validate_api_access():
 
 
 def get_filings(year):
-    # Query only the official regular-report detail categories. Without this filter,
-    # list.json can return hundreds of unrelated periodic disclosures for Samsung.
+    # Query only official regular-report detail categories. Fetch the three categories
+    # concurrently so one slow OpenDART response cannot serially delay every category.
     # A business year's annual report may be filed through April of the following year.
     base_params = {
         'corp_code': CORP_CODE,
@@ -82,25 +83,30 @@ def get_filings(year):
         'sort': 'date',
         'sort_mth': 'asc',
     }
-    rows = []
-    # OpenDART: A001=annual, A002=half-year, A003=quarterly.
-    for detail_type in ('A001', 'A002', 'A003'):
+
+    def fetch_detail(detail_type):
         params = dict(base_params, pblntf_detail_ty=detail_type)
         try:
             first = api('list.json', params, False)
         except RuntimeError as exc:
-            # OpenDART status 013 means no matching disclosures. That can be normal
-            # for a report type not filed yet in the current business year; continue
-            # checking the other report categories rather than dropping the whole year.
+            # Status 013 means no matching disclosures. This is normal for some
+            # report categories before the filing date; continue with other categories.
             if ' 013 ' in str(exc) or '조회된 데이타가 없습니다' in str(exc) or '조회된 데이터가 없습니다' in str(exc):
-                print(f'[INFO] No {detail_type} filings for {year}; checking remaining report types.')
-                continue
+                print(f'[INFO] No {detail_type} filings for {year}; continuing.')
+                return []
             raise
-        rows.extend(first.get('list', []))
+        rows = list(first.get('list', []))
         total_pages = int(first.get('total_page') or 1)
         for page_no in range(2, total_pages + 1):
             next_params = dict(params, page_no=page_no)
             rows.extend(api('list.json', next_params, False).get('list', []))
+        return rows
+
+    # executor.map preserves the category order even though requests run concurrently.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        groups = list(executor.map(fetch_detail, ('A001', 'A002', 'A003')))
+    rows = [row for group in groups for row in group]
+
     # Deduplicate across disclosure categories and pages.
     unique = {}
     for row in rows:
@@ -237,28 +243,38 @@ def build_record(year, typ, filing, raw_rows=None):
     }
     return rec
 
+def fetch_financial_record(task):
+    year, typ, filing = task
+    try:
+        rows = fetch_financials_2015_plus(year, REPORT_CODES[typ])
+        return build_record(year, typ, filing, rows)
+    except Exception as ex:
+        print(f'[WARN] financials {year} {typ}: {ex}')
+        return None
+
+
 def collect():
     DATA.mkdir(exist_ok=True); REPORTS.mkdir(exist_ok=True)
     all_records=[]; filings_index=[]
+    print(f'[INFO] Collection range: {EFFECTIVE_START_YEAR}-{END_YEAR}; legacy parsing={PARSE_LEGACY or SAVE_RAW}')
     for year in range(EFFECTIVE_START_YEAR, END_YEAR+1):
-        try: filings=relevant_filings(year)
+        try:
+            filings = relevant_filings(year)
         except Exception as ex:
-            print(f'[WARN] filings {year}: {ex}'); continue
+            print(f'[WARN] filings {year}: {ex}')
+            continue
+
+        tasks=[]
         for f in filings:
             typ=f['report_type']; code=REPORT_CODES[typ]
             filing=dict(f, reprt_code=code)
             filings_index.append(filing)
             if year>=2015:
-                try:
-                    rows=fetch_financials_2015_plus(year,code)
-                    rec=build_record(year,typ,filing,rows)
-                    all_records.append(rec)
-                except Exception as ex: print(f'[WARN] financials {year} {typ}: {ex}')
+                tasks.append((year, typ, filing))
             else:
                 # The standard OpenDART financial-statement API begins in 2015.
                 # Legacy HTML/XML extraction is heuristic and does not yet normalize
-                # historical account values safely, so keep it opt-in rather than
-                # delaying the usable 2015+ financial dataset on every scheduled run.
+                # historical account values safely, so keep it opt-in.
                 rec=build_record(year,typ,filing,{})
                 rec['source']='DART original filing (pre-2015; metadata only unless PARSE_LEGACY_REPORTS=true)'
                 rec['legacy_candidates']=[]
@@ -274,12 +290,26 @@ def collect():
                     except Exception as ex:
                         print(f'[WARN] legacy {year} {typ}: {ex}')
                 all_records.append(rec)
-            if SAVE_RAW and year>=2015:
+
+        # Up to four statement requests in parallel; map preserves report ordering.
+        if tasks:
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                year_records = [record for record in executor.map(fetch_financial_record, tasks) if record is not None]
+            all_records.extend(year_records)
+        print(f'[INFO] {year}: {len(filings)} filings indexed; {len(tasks)} statement requests; {len(all_records)} total financial records so far.')
+
+        if SAVE_RAW and year>=2015:
+            for f in filings:
+                typ=f['report_type']
                 try:
                     blob=download_original(f['rcept_no'])
-                    p=REPORTS/str(year)/f"{typ}_{f['rcept_no']}.zip"; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(blob)
-                except Exception as ex: print(f'[WARN] raw {year} {typ}: {ex}')
+                    p=REPORTS/str(year)/f"{typ}_{f['rcept_no']}.zip"
+                    p.parent.mkdir(parents=True,exist_ok=True)
+                    p.write_bytes(blob)
+                except Exception as ex:
+                    print(f'[WARN] raw {year} {typ}: {ex}')
         time.sleep(0.2)
+
     save_json(DATA/'financials.json',all_records)
     save_json(DATA/'filings.json',filings_index)
     write_csv(all_records)
