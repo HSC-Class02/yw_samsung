@@ -107,27 +107,45 @@ def get_filings(year):
         unique[row.get('rcept_no') or repr(row)] = row
     return list(unique.values())
 
+def classify_report_type(report_name):
+    """Map DART report names, including the generic quarterly title, to dashboard periods."""
+    name = report_name or ''
+    if '사업보고서' in name:
+        return 'annual'
+    if '반기보고서' in name:
+        return 'half-year'
+    if '1분기보고서' in name:
+        return 'quarterly-q1'
+    if '3분기보고서' in name:
+        return 'quarterly-q3'
+    if '분기보고서' in name:
+        # DART commonly labels both quarters simply '분기보고서 (YYYY.MM)'.
+        match = re.search(r'\((20\d{2})\.(\d{2})', name)
+        if match and match.group(2) == '03':
+            return 'quarterly-q1'
+        if match and match.group(2) == '09':
+            return 'quarterly-q3'
+    return None
+
+
 def relevant_filings(year):
     rows=[]
     for x in get_filings(year):
-        code=x.get('report_nm','')
-        if not any(n in code for n in ('사업보고서','반기보고서','1분기보고서','3분기보고서')):
+        name=x.get('report_nm','')
+        if not any(n in name for n in ('사업보고서','반기보고서','분기보고서')):
             continue
         # DART filing date can be in the following calendar year for annual reports.
         # Prefer the business period shown in report_nm, e.g. '(2025.12)'.
-        m=re.search(r'\((20\d{2})\.', code)
+        m=re.search(r'\((20\d{2})\.', name)
         if m and int(m.group(1)) != year:
             continue
         rows.append(x)
-    # Prefer the latest filing for the same report name, because amended filings can exist.
+    # Prefer the latest filing for each normalized report type because amended reports can exist.
     best={}
     for x in rows:
-        name=x.get('report_nm','')
-        if '사업보고서' in name: key='annual'
-        elif '반기보고서' in name: key='half-year'
-        elif '1분기보고서' in name: key='quarterly-q1'
-        elif '3분기보고서' in name: key='quarterly-q3'
-        else: continue
+        key=classify_report_type(x.get('report_nm',''))
+        if not key:
+            continue
         if key not in best or x.get('rcept_dt','') > best[key].get('rcept_dt',''):
             best[key]=dict(x, report_type=key)
     return list(best.values())
