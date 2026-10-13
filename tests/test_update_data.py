@@ -1,7 +1,9 @@
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from src.update_data import build_record, extract_major, get_filings, parse_num, validate_api_access
+from src.update_data import build_record, extract_major, get_filings, parse_num, validate_api_access, write_csv
 
 
 class FinancialExtractionTests(unittest.TestCase):
@@ -42,6 +44,33 @@ class FinancialExtractionTests(unittest.TestCase):
         for call in mocked_api.call_args_list:
             self.assertEqual(call.args[1]["bgn_de"], "20250101")
             self.assertEqual(call.args[1]["end_de"], "20260430")
+
+    def test_write_csv_accepts_all_ratio_fields(self):
+        record = {
+            "year": 2025,
+            "period": "annual",
+            "report_name": "사업보고서",
+            "rcept_dt": "20260301",
+            "dart_url": "https://dart.fss.or.kr/",
+            "major": {"revenue": 1000.0},
+            "ratios": {
+                "operating_margin": 0.1,
+                "net_margin": 0.05,
+                "roe": 0.08,
+                "roa": 0.04,
+                "debt_ratio": 0.5,
+                "equity_ratio": 0.6,
+                "current_ratio": None,
+                "asset_turnover": 0.7,
+            },
+        }
+        with tempfile.TemporaryDirectory() as folder:
+            with patch("src.update_data.DATA", Path(folder)):
+                write_csv([record])
+                csv_file = Path(folder) / "financials.csv"
+                self.assertTrue(csv_file.exists())
+                header = csv_file.read_text(encoding="utf-8-sig").splitlines()[0]
+                self.assertIn("current_ratio", header)
 
     def test_parse_num_handles_commas_and_parentheses(self):
         self.assertEqual(parse_num("1,234"), 1234.0)
