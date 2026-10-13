@@ -6,6 +6,20 @@ from src.update_data import build_record, extract_major, get_filings, parse_num
 
 class FinancialExtractionTests(unittest.TestCase):
     @patch("src.update_data.api")
+    def test_get_filings_continues_when_one_report_category_has_no_data(self, mocked_api):
+        mocked_api.side_effect = [
+            RuntimeError("DART API list.json: 013 조회된 데이타가 없습니다."),
+            {"list": [{"rcept_no": "half"}], "total_page": 1},
+            {"list": [{"rcept_no": "quarter"}], "total_page": 1},
+        ]
+        rows = get_filings(2026)
+        self.assertEqual([row["rcept_no"] for row in rows], ["half", "quarter"])
+        self.assertEqual(
+            [call.args[1]["pblntf_detail_ty"] for call in mocked_api.call_args_list],
+            ["A001", "A002", "A003"],
+        )
+
+    @patch("src.update_data.api")
     def test_get_filings_filters_official_periodic_report_types(self, mocked_api):
         mocked_api.side_effect = [
             {"list": [{"rcept_no": "annual"}], "total_page": 1},
