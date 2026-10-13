@@ -263,7 +263,7 @@ def collect():
     return all_records
 
 def write_csv(records):
-    fields=['year','period','report_name','rcept_dt','dart_url','revenue','operating_income','net_income','total_assets','total_liabilities','total_equity','cash_and_equivalents','operating_cash_flow','investing_cash_flow','financing_cash_flow','eps','operating_margin','net_margin','roe','roa','debt_ratio','equity_ratio','asset_turnover']
+    fields=['year','period','report_name','rcept_dt','dart_url','revenue','operating_income','net_income','total_assets','total_liabilities','total_equity','cash_and_equivalents','operating_cash_flow','investing_cash_flow','financing_cash_flow','eps','operating_margin','net_margin','roe','roa','debt_ratio','equity_ratio','current_ratio','asset_turnover']
     with (DATA/'financials.csv').open('w',newline='',encoding='utf-8-sig') as f:
         w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
         for r in records:
