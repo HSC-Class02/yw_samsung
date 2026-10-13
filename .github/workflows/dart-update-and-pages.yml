@@ -31,11 +31,12 @@ env:
   DART_CORP_CODE: '00126380'
   SAVE_RAW_REPORTS: 'false'
   PARSE_LEGACY_REPORTS: 'false'
+  DART_API_TIMEOUT: '25'
 
 jobs:
   update-and-deploy:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
