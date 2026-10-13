@@ -18,6 +18,7 @@ STOCK_CODE = '005930'
 START_YEAR = int(os.getenv('START_YEAR', '2010'))
 END_YEAR = int(os.getenv('END_YEAR', str(datetime.now().year)))
 API_KEY = os.getenv('OPENDART_API_KEY', '').strip()
+API_TIMEOUT = int(os.getenv('DART_API_TIMEOUT', '25'))
 SAVE_RAW = os.getenv('SAVE_RAW_REPORTS', 'false').lower() == 'true'
 PARSE_LEGACY = os.getenv('PARSE_LEGACY_REPORTS', 'false').lower() == 'true'
 
@@ -42,7 +43,7 @@ def api(path, params, binary=False):
     if not API_KEY: raise RuntimeError('OPENDART_API_KEY가 설정되지 않았습니다.')
     q = dict(params); q['crtfc_key']=API_KEY
     req=Request(BASE+'/'+path+'?'+urlencode(q), headers={'User-Agent':'yw-samsung-dart-agent/1.0'})
-    with urlopen(req, timeout=60) as r: body=r.read()
+    with urlopen(req, timeout=API_TIMEOUT) as r: body=r.read()
     if binary: return body
     obj=json.loads(body.decode('utf-8'))
     if obj.get('status') != '000':
@@ -52,6 +53,15 @@ def api(path, params, binary=False):
 def save_json(path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding='utf-8')
+
+def validate_api_access():
+    """Fail fast if the API key is invalid or the OpenDART endpoint is unreachable."""
+    company = api('company.json', {'corp_code': CORP_CODE}, False)
+    returned_code = company.get('corp_code')
+    if returned_code and returned_code != CORP_CODE:
+        raise RuntimeError(f'OpenDART returned an unexpected corp_code: {returned_code}')
+    return company
+
 
 def get_filings(year):
     # Query only the official regular-report detail categories. Without this filter,
@@ -260,7 +270,14 @@ def write_csv(records):
             row={k:r.get(k) for k in fields}; row.update(r.get('major',{})); row.update(r.get('ratios',{})); w.writerow(row)
 
 def main():
-    if not API_KEY: print('ERROR: GitHub Secret OPENDART_API_KEY가 필요합니다.',file=sys.stderr); sys.exit(2)
+    if not API_KEY:
+        print('ERROR: GitHub Secret OPENDART_API_KEY 또는 DART_API_KEY가 필요합니다.', file=sys.stderr)
+        sys.exit(2)
+    try:
+        validate_api_access()
+    except Exception as ex:
+        print(f'ERROR: OpenDART API preflight failed: {ex}', file=sys.stderr)
+        sys.exit(2)
     records=collect()
     save_json(DATA/'last_update.json',{'updated_at':datetime.now().astimezone().isoformat(),'record_count':len(records),'start_year':START_YEAR,'end_year':END_YEAR})
     print(f'Collected {len(records)} records')
