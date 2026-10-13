@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from src.update_data import build_record, extract_major, get_filings, parse_num, validate_api_access, write_csv
+from src.update_data import build_record, collection_start_year, extract_major, get_filings, parse_num, validate_api_access, write_csv
 
 
 class FinancialExtractionTests(unittest.TestCase):
@@ -71,6 +71,12 @@ class FinancialExtractionTests(unittest.TestCase):
                 self.assertTrue(csv_file.exists())
                 header = csv_file.read_text(encoding="utf-8-sig").splitlines()[0]
                 self.assertIn("current_ratio", header)
+
+    def test_collection_starts_at_2015_unless_legacy_is_enabled(self):
+        with patch("src.update_data.START_YEAR", 2010), patch("src.update_data.PARSE_LEGACY", False), patch("src.update_data.SAVE_RAW", False):
+            self.assertEqual(collection_start_year(), 2015)
+        with patch("src.update_data.START_YEAR", 2010), patch("src.update_data.PARSE_LEGACY", True), patch("src.update_data.SAVE_RAW", False):
+            self.assertEqual(collection_start_year(), 2010)
 
     def test_parse_num_handles_commas_and_parentheses(self):
         self.assertEqual(parse_num("1,234"), 1234.0)
