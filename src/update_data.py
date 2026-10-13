@@ -22,7 +22,10 @@ API_TIMEOUT = int(os.getenv('DART_API_TIMEOUT', '25'))
 SAVE_RAW = os.getenv('SAVE_RAW_REPORTS', 'false').lower() == 'true'
 PARSE_LEGACY = os.getenv('PARSE_LEGACY_REPORTS', 'false').lower() == 'true'
 # Numeric statement API coverage starts in 2015. Avoid slow legacy filing-list scans unless opted in.
-EFFECTIVE_START_YEAR = START_YEAR if (PARSE_LEGACY or SAVE_RAW) else max(START_YEAR, 2015)
+def collection_start_year():
+    return START_YEAR if (PARSE_LEGACY or SAVE_RAW) else max(START_YEAR, 2015)
+
+EFFECTIVE_START_YEAR = collection_start_year()
 
 REPORT_CODES = {'annual':'11011','half-year':'11012','quarterly-q1':'11013','quarterly-q3':'11014'}
 REPORT_NAMES = {'11011':'사업보고서','11012':'반기보고서','11013':'1분기보고서','11014':'3분기보고서'}
