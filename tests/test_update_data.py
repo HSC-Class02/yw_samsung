@@ -1,9 +1,27 @@
 import unittest
+from unittest.mock import patch
 
-from src.update_data import build_record, extract_major, parse_num
+from src.update_data import build_record, extract_major, get_filings, parse_num
 
 
 class FinancialExtractionTests(unittest.TestCase):
+    @patch("src.update_data.api")
+    def test_get_filings_filters_official_periodic_report_types(self, mocked_api):
+        mocked_api.side_effect = [
+            {"list": [{"rcept_no": "annual"}], "total_page": 1},
+            {"list": [{"rcept_no": "half"}], "total_page": 1},
+            {"list": [{"rcept_no": "quarter"}], "total_page": 1},
+        ]
+        rows = get_filings(2025)
+        self.assertEqual([row["rcept_no"] for row in rows], ["annual", "half", "quarter"])
+        self.assertEqual(
+            [call.args[1]["pblntf_detail_ty"] for call in mocked_api.call_args_list],
+            ["A001", "A002", "A003"],
+        )
+        for call in mocked_api.call_args_list:
+            self.assertEqual(call.args[1]["bgn_de"], "20250101")
+            self.assertEqual(call.args[1]["end_de"], "20260430")
+
     def test_parse_num_handles_commas_and_parentheses(self):
         self.assertEqual(parse_num("1,234"), 1234.0)
         self.assertEqual(parse_num("(1,234)"), -1234.0)
