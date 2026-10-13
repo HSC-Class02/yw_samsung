@@ -22,7 +22,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: dashboard-refresh-v2
+  group: dashboard-refresh-v3
   cancel-in-progress: true
 
 env:
