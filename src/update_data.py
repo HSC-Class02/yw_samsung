@@ -70,7 +70,16 @@ def get_filings(year):
     # OpenDART: A001=annual, A002=half-year, A003=quarterly.
     for detail_type in ('A001', 'A002', 'A003'):
         params = dict(base_params, pblntf_detail_ty=detail_type)
-        first = api('list.json', params, False)
+        try:
+            first = api('list.json', params, False)
+        except RuntimeError as exc:
+            # OpenDART status 013 means no matching disclosures. That can be normal
+            # for a report type not filed yet in the current business year; continue
+            # checking the other report categories rather than dropping the whole year.
+            if ' 013 ' in str(exc) or '조회된 데이타가 없습니다' in str(exc) or '조회된 데이터가 없습니다' in str(exc):
+                print(f'[INFO] No {detail_type} filings for {year}; checking remaining report types.')
+                continue
+            raise
         rows.extend(first.get('list', []))
         total_pages = int(first.get('total_page') or 1)
         for page_no in range(2, total_pages + 1):
