@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from src.update_data import build_record, collection_start_year, extract_major, get_filings, parse_num, validate_api_access, write_csv
+from src.update_data import build_record, classify_report_type, collection_start_year, extract_major, get_filings, parse_num, relevant_filings, validate_api_access, write_csv
 
 
 class FinancialExtractionTests(unittest.TestCase):
@@ -71,6 +71,24 @@ class FinancialExtractionTests(unittest.TestCase):
                 self.assertTrue(csv_file.exists())
                 header = csv_file.read_text(encoding="utf-8-sig").splitlines()[0]
                 self.assertIn("current_ratio", header)
+
+    def test_quarterly_report_names_are_classified_by_reporting_month(self):
+        self.assertEqual(classify_report_type("분기보고서 (2025.03)"), "quarterly-q1")
+        self.assertEqual(classify_report_type("분기보고서 (2025.09)"), "quarterly-q3")
+        self.assertEqual(classify_report_type("사업보고서 (2025.12)"), "annual")
+        self.assertEqual(classify_report_type("반기보고서 (2025.06)"), "half-year")
+        self.assertIsNone(classify_report_type("주요사항보고서"))
+
+    @patch("src.update_data.get_filings")
+    def test_relevant_filings_keeps_both_quarters(self, mocked_get_filings):
+        mocked_get_filings.return_value = [
+            {"report_nm": "분기보고서 (2025.03)", "rcept_no": "q1", "rcept_dt": "20250401"},
+            {"report_nm": "분기보고서 (2025.09)", "rcept_no": "q3", "rcept_dt": "20251101"},
+            {"report_nm": "사업보고서 (2024.12)", "rcept_no": "prior-year", "rcept_dt": "20250301"},
+        ]
+        rows = relevant_filings(2025)
+        self.assertEqual({row["report_type"] for row in rows}, {"quarterly-q1", "quarterly-q3"})
+        self.assertEqual({row["rcept_no"] for row in rows}, {"q1", "q3"})
 
     def test_collection_starts_at_2015_unless_legacy_is_enabled(self):
         with patch("src.update_data.START_YEAR", 2010), patch("src.update_data.PARSE_LEGACY", False), patch("src.update_data.SAVE_RAW", False):
