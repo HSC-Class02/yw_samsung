@@ -21,6 +21,8 @@ API_KEY = os.getenv('OPENDART_API_KEY', '').strip()
 API_TIMEOUT = int(os.getenv('DART_API_TIMEOUT', '25'))
 SAVE_RAW = os.getenv('SAVE_RAW_REPORTS', 'false').lower() == 'true'
 PARSE_LEGACY = os.getenv('PARSE_LEGACY_REPORTS', 'false').lower() == 'true'
+# Numeric statement API coverage starts in 2015. Avoid slow legacy filing-list scans unless opted in.
+EFFECTIVE_START_YEAR = START_YEAR if (PARSE_LEGACY or SAVE_RAW) else max(START_YEAR, 2015)
 
 REPORT_CODES = {'annual':'11011','half-year':'11012','quarterly-q1':'11013','quarterly-q3':'11014'}
 REPORT_NAMES = {'11011':'사업보고서','11012':'반기보고서','11013':'1분기보고서','11014':'3분기보고서'}
@@ -217,7 +219,7 @@ def build_record(year, typ, filing, raw_rows=None):
 def collect():
     DATA.mkdir(exist_ok=True); REPORTS.mkdir(exist_ok=True)
     all_records=[]; filings_index=[]
-    for year in range(START_YEAR, END_YEAR+1):
+    for year in range(EFFECTIVE_START_YEAR, END_YEAR+1):
         try: filings=relevant_filings(year)
         except Exception as ex:
             print(f'[WARN] filings {year}: {ex}'); continue
@@ -279,7 +281,7 @@ def main():
         print(f'ERROR: OpenDART API preflight failed: {ex}', file=sys.stderr)
         sys.exit(2)
     records=collect()
-    save_json(DATA/'last_update.json',{'updated_at':datetime.now().astimezone().isoformat(),'record_count':len(records),'start_year':START_YEAR,'end_year':END_YEAR})
+    save_json(DATA/'last_update.json',{'updated_at':datetime.now().astimezone().isoformat(),'record_count':len(records),'start_year':EFFECTIVE_START_YEAR,'requested_start_year':START_YEAR,'end_year':END_YEAR})
     print(f'Collected {len(records)} records')
 
 if __name__=='__main__': main()
