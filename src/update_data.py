@@ -19,6 +19,7 @@ START_YEAR = int(os.getenv('START_YEAR', '2010'))
 END_YEAR = int(os.getenv('END_YEAR', str(datetime.now().year)))
 API_KEY = os.getenv('OPENDART_API_KEY', '').strip()
 SAVE_RAW = os.getenv('SAVE_RAW_REPORTS', 'false').lower() == 'true'
+PARSE_LEGACY = os.getenv('PARSE_LEGACY_REPORTS', 'false').lower() == 'true'
 
 REPORT_CODES = {'annual':'11011','half-year':'11012','quarterly-q1':'11013','quarterly-q3':'11014'}
 REPORT_NAMES = {'11011':'사업보고서','11012':'반기보고서','11013':'1분기보고서','11014':'3분기보고서'}
@@ -221,17 +222,25 @@ def collect():
                     all_records.append(rec)
                 except Exception as ex: print(f'[WARN] financials {year} {typ}: {ex}')
             else:
-                try:
-                    blob=download_original(f['rcept_no'])
-                    candidates=parse_legacy_zip(blob)
-                    # Preserve candidates for manual/audit mapping rather than inventing values.
-                    rec=build_record(year,typ,filing,{})
-                    rec['source']='DART original filing (legacy parser)'
-                    rec['legacy_candidates']=candidates[:500]
-                    all_records.append(rec)
-                    if SAVE_RAW:
-                        p=REPORTS/str(year)/f"{typ}_{f['rcept_no']}.zip"; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(blob)
-                except Exception as ex: print(f'[WARN] legacy {year} {typ}: {ex}')
+                # The standard OpenDART financial-statement API begins in 2015.
+                # Legacy HTML/XML extraction is heuristic and does not yet normalize
+                # historical account values safely, so keep it opt-in rather than
+                # delaying the usable 2015+ financial dataset on every scheduled run.
+                rec=build_record(year,typ,filing,{})
+                rec['source']='DART original filing (pre-2015; metadata only unless PARSE_LEGACY_REPORTS=true)'
+                rec['legacy_candidates']=[]
+                if PARSE_LEGACY or SAVE_RAW:
+                    try:
+                        blob=download_original(f['rcept_no'])
+                        candidates=parse_legacy_zip(blob)
+                        rec['legacy_candidates']=candidates[:500]
+                        if SAVE_RAW:
+                            p=REPORTS/str(year)/f"{typ}_{f['rcept_no']}.zip"
+                            p.parent.mkdir(parents=True,exist_ok=True)
+                            p.write_bytes(blob)
+                    except Exception as ex:
+                        print(f'[WARN] legacy {year} {typ}: {ex}')
+                all_records.append(rec)
             if SAVE_RAW and year>=2015:
                 try:
                     blob=download_original(f['rcept_no'])
