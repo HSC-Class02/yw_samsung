@@ -30,6 +30,7 @@ env:
   START_YEAR: '2010'
   DART_CORP_CODE: '00126380'
   SAVE_RAW_REPORTS: 'false'
+  PARSE_LEGACY_REPORTS: 'false'
 
 jobs:
   update-and-deploy:
