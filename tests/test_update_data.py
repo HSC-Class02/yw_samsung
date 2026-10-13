@@ -1,10 +1,17 @@
 import unittest
 from unittest.mock import patch
 
-from src.update_data import build_record, extract_major, get_filings, parse_num
+from src.update_data import build_record, extract_major, get_filings, parse_num, validate_api_access
 
 
 class FinancialExtractionTests(unittest.TestCase):
+    @patch("src.update_data.api")
+    def test_validate_api_access_checks_company_code(self, mocked_api):
+        mocked_api.return_value = {"corp_code": "00126380", "corp_name": "삼성전자"}
+        company = validate_api_access()
+        self.assertEqual(company["corp_code"], "00126380")
+        mocked_api.assert_called_once_with("company.json", {"corp_code": "00126380"}, False)
+
     @patch("src.update_data.api")
     def test_get_filings_continues_when_one_report_category_has_no_data(self, mocked_api):
         mocked_api.side_effect = [
